@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Revisiting SVRPG for LLM Reinforcement Learning</title>
+
+  <meta name="description" content="Adapting Stochastic Variance-Reduced Policy Gradients (SVRPG) to stabilize KL-regularized alignment in Large Language Models.">
+  <meta name="keywords" content="RLHF, LLM, PPO, SVRPG, Variance Reduction, Policy Gradient, Machine Learning, Optimization">
+  <meta name="author" content="Yifan Zhang">
+  <meta name="citation_title" content="Revisiting Variance Reduction in Policy Gradients for LLM Reinforcement Learning">
+  <meta name="citation_author" content="Yifan Zhang">
+  <meta name="citation_publication_date" content="2025/12/27">
+  
+  <meta property="og:title" content="Revisiting SVRPG for LLM RL"/>
+  <meta property="og:description" content="Stabilizing LLM alignment by revisiting variance reduction techniques."/>
+  <meta property="og:type" content="website"/>
+  <meta property="og:url" content="https://yifanzhang-pro.github.io/Revisiting-SVRPG-LLM-RL"/>
+  <link rel="canonical" href="https://yifanzhang-pro.github.io/Revisiting-SVRPG-LLM-RL">
+  
+  <link rel="icon" href="https://placehold.co/32x32/0A2540/FFFFFF?text=V" type="image/x-icon">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.4/css/bulma.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']],
+      },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+
+  <style>
+    :root{
+      --primary-color:#0A2540;    /* Deep Navy */
+      --accent-color:#00C2FF;     /* Cyan Accent */
+      --main-bg:#FFFFFF;
+      --content-bg:#F6F8FA;
+      --text-main:#2D2D2D;
+      --text-on-primary:#FFFFFF;
+      --link-color:var(--primary-color);
+      --link-hover-color:#143E73;
+      --primary-color-rgb:10,37,64;
+      --link-color-rgb:10,37,64;
+      --border-color:#e5e7eb;
+      --shadow-color:rgba(0,0,0,0.1);
+    }
+
+    html{scroll-behavior:smooth}
+    body{
+      font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      color:var(--text-main); background:var(--main-bg);
+      display:flex; flex-direction:column; min-height:100vh;
+      text-rendering:optimizeLegibility; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+    }
+
+    /* Navbar */
+    .navbar{
+      background:rgba(var(--primary-color-rgb),0.92);
+      backdrop-filter:blur(10px);
+      box-shadow:0 2px 5px var(--shadow-color);
+      position:sticky; top:0; z-index:100;
+    }
+    .navbar .navbar-item, .navbar .navbar-link{ color:var(--text-on-primary); font-weight:500; }
+    .navbar a.navbar-item:hover, .navbar .navbar-link:hover, .navbar-item.is-active{ color:var(--accent-color)!important; background:transparent!important; }
+    .navbar-burger{ color:var(--text-on-primary); }
+
+    /* Hero */
+    .hero{ background:linear-gradient(180deg, #0A2540 0%, #0e3055 100%); color:var(--text-on-primary); }
+    .hero .title{
+      font-family:'Space Grotesk', sans-serif; font-weight:700; color:var(--text-on-primary);
+      font-size:3.0rem; line-height:1.1;
+    }
+    .hero .subtitle.is-hero-subtitle{
+      color:rgba(255,255,255,0.92); font-size:1.18rem; max-width:980px; margin:1.25rem auto 2rem auto;
+    }
+    .hero .subtitle .highlight{ color:var(--accent-color); font-weight:600; }
+
+    .project-links a{ color:var(--text-on-primary); font-size:1.45rem; margin:0 0.6rem; transition:transform .25s ease, color .25s ease; }
+    .project-links a:hover{ color:var(--accent-color); transform:translateY(-2px); }
+
+    /* Authors */
+    .authors-list { font-size: 1.25rem; line-height: 1.6; margin-top: 1rem; color: rgba(255,255,255,0.95); font-weight: 500; }
+    .date-display { font-size: 0.95rem; color: rgba(255,255,255,0.7); margin-top: 0.5rem; font-style: italic;}
+
+    /* Sections */
+    .section.content-section{ padding:4.5rem 1.25rem; border-bottom:1px solid var(--border-color); }
+    .section.content-section:nth-child(even){ background:var(--content-bg); }
+    .section-title{
+      font-family:'Space Grotesk', sans-serif; font-weight:700; color:var(--primary-color);
+      margin-bottom:2.2rem;
+    }
+    .content{ max-width:1000px; margin:0 auto; line-height:1.8; font-size:1.06rem; }
+    .content a{ color:var(--link-color); font-weight:500; text-decoration:none; border-bottom:2px solid rgba(var(--link-color-rgb),.2); }
+    .content a:hover{ color:var(--link-hover-color); border-bottom-color:var(--link-hover-color); }
+    .content img{ display:block; margin:1.75rem auto; max-width:100%; border-radius:10px; box-shadow:0 4px 15px rgba(0,0,0,0.08); }
+
+    /* Code & Pre */
+    .content pre{
+      background:#0f172a; color:#cbd5e1; border-radius:8px; padding:1.1em 1.2em;
+      overflow:auto; box-shadow:inset 0 0 0 1px rgba(255,255,255,0.04);
+      font-size:0.95rem;
+    }
+    code{ background:#f2f4f7; color:#1f2937; padding:0.18em 0.38em; border-radius:4px; font-size:85%; }
+    pre code{ background:transparent; color:inherit; padding:0; font-size:inherit; }
+
+    /* Custom Boxes for "Pillars" */
+    .pillar-box {
+        background: #fff; border: 1px solid var(--border-color); border-radius: 8px;
+        padding: 1.5rem; height: 100%; transition: transform 0.2s;
+    }
+    .pillar-box:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+
+    /* Badges */
+    .pill{ display:inline-block; padding:.35rem .6rem; border-radius:999px; font-size:.82rem; background:#E6F7FF; color:#0A2540; margin:.15rem .25rem; border:1px solid #C8ECFF; }
+
+    /* Tables */
+    .table-container { overflow-x: auto; margin: 2rem 0; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border: 1px solid #eee; }
+    .table { width: 100%; border-collapse: collapse; background: #fff; }
+    .table th { background: #f8fafc; color: var(--primary-color); font-weight: 600; padding: 1rem; text-align: left; border-bottom: 2px solid #e2e8f0; }
+    .table td { padding: 1rem; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
+
+    /* Footer */
+    .footer{
+      background:var(--primary-color); color:var(--text-on-primary);
+      padding:2rem 1.5rem; border-top:3px solid var(--accent-color); margin-top:auto;
+    }
+    .footer a{ color:var(--accent-color); font-weight:500; }
+    .footer a:hover{ color:#ffffff; }
+
+    /* Utility */
+    .mini-caption{ display:block; margin-top:.35rem; color:#6b7280; font-style:italic; text-align:center;}
+    
+    /* SVG Styling */
+    .diagram-container {
+        width: 100%;
+        margin: 2rem 0;
+        text-align: center;
+        background: #fff;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        padding: 1rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    }
+    svg text { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar" role="navigation" aria-label="main navigation">
+    <div class="container">
+      <div class="navbar-brand">
+        <a class="navbar-item is-size-5 has-text-weight-bold" href="#">Revisiting SVRPG</a>
+        <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarMenu">
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+        </a>
+      </div>
+      <div id="navbarMenu" class="navbar-menu">
+        <div class="navbar-end">
+          <a href="#intro" class="navbar-item">Introduction</a>
+          <a href="#theory" class="navbar-item">Theory</a>
+          <a href="#svrpg" class="navbar-item">SVRPG</a>
+          <a href="#algorithm" class="navbar-item">Algorithm</a>
+          <a href="#citation" class="navbar-item">Citation</a>
+          <a href="https://github.com/yifanzhang-pro/Revisiting-SVRPG-LLM-RL" class="navbar-item"><i class="fab fa-github"></i>&nbsp; Code</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <header class="hero is-medium">
+    <div class="hero-body">
+      <div class="container has-text-centered">
+        <h1 class="title">Revisiting Variance Reduction</h1>
+        <h2 class="subtitle is-hero-subtitle">
+          In Policy Gradients for <span class="highlight">LLM Reinforcement Learning</span>
+        </h2>
+        
+        <div class="authors-list">
+           Yifan Zhang, Quanquan Gu
+        </div>
+        <div class="date-display">
+           December 27, 2025
+        </div>
+
+        <div class="project-links" style="margin-top:1.5rem;">
+          <a href="https://github.com/yifanzhang-pro/Revisiting-SVRPG-LLM-RL" target="_blank" rel="noopener" aria-label="GitHub Repository"><i class="fab fa-github"></i></a>
+          <a href="#citation" aria-label="Citation"><i class="fas fa-quote-right"></i></a>
+        </div>
+        <div style="margin-top:1.25rem;">
+          <span class="pill">Reinforcement Learning</span>
+          <span class="pill">LLM Alignment</span>
+          <span class="pill">Variance Reduction</span>
+          <span class="pill">Optimization</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section id="intro" class="section content-section">
+      <div class="container">
+        <h2 class="title is-3 has-text-centered section-title">The Variance Bottleneck</h2>
+        <div class="content has-text-justified" style="max-width:880px;">
+          <p>
+            Reinforcement Learning (RL) has become central to aligning Large Language Models (LLMs) with complex reasoning tasks. While recent advancements have refined KL-regularized policy gradient objectives, the high variance inherent in gradient estimators remains a persistent bottleneck. This often necessitates prohibitively large batch sizes or conservative update steps, impeding sample efficiency.
+          </p>
+          <div class="notification is-light is-info" style="border-left: 4px solid var(--primary-color);">
+            <strong>The Contribution:</strong> This work revisits the principles of <strong>Stochastic Variance-Reduced Policy Gradient (SVRPG)</strong> and adapts them to the high-dimensional domain of LLM alignment. We propose a variance-reduced estimator utilizing periodic policy snapshots to construct a control variate specifically for the KL-regularized objective.
+          </div>
+          <p>
+             We reconcile standard LLM alignment with SVRPG (Papini et al., 2018), demonstrating that a periodic snapshot mechanism can be efficiently integrated to stabilize learning without incurring prohibitive memory overheads.
+          </p>
+        </div>
+      </div>
+    </section>
+
+  <section id="theory" class="section content-section">
+      <div class="container">
+        <h2 class="title is-3 has-text-centered section-title">Theoretical Framework</h2>
+        <div class="content">
+          <p>
+            To apply stochastic variance reduction effectively, we require a rigorous definition of the gradient for the KL-regularized objective under off-policy sampling:
+            $$J(\theta) = \mathbb{E}[R] - \beta \text{KL}$$
+          </p>
+
+          <h4 class="title is-5">Unnormalized Divergences</h4>
+          <p>
+            In reasoning tasks, we often deal with unnormalized objectives. We derive exact gradients for both <strong>Unnormalized Forward KL (UFKL)</strong> and <strong>Unnormalized Reverse KL (URKL)</strong>. The Unnormalized Forward KL is defined as:
+          </p>
+          $$
+          \text{UKL}(\pi_{\mathrm{old}}\|\pi_\theta) = \int_x \pi_{\mathrm{old}}(x)\log\frac{\pi_{\mathrm{old}}(x)}{\pi_\theta(x)}\,dx + \int_x \bigl(\pi_\theta(x)-\pi_{\mathrm{old}}(x)\bigr)\,dx
+          $$
+
+          <h4 class="title is-5" style="margin-top: 2rem;">Differentiable Surrogate Losses</h4>
+          <p>
+             Crucially for implementation in frameworks like PyTorch, we derive differentiable surrogate losses $\mathcal{L}(\theta)$ such that $\nabla_\theta \mathcal{L}(\theta)$ is an unbiased estimator of $-\nabla_\theta J(\theta)$. For the <strong>Unnormalized Reverse KL (URKL)</strong>—theoretically equivalent to the $k_3$ estimator used in methods like GRPO—the surrogate loss is:
+          </p>
+          $$
+          \mathcal{L}_{\mathrm{URKL}}(\theta) = Z_{\mathrm{old}} \mathbb{E}_{x\sim\tilde{\pi}_{\mathrm{old}}}\left[ -w(x)R(x) + \beta\bigl(w(x)\log w(x) - w(x)\bigr) \right]
+          $$
+          <p class="is-size-7 has-text-grey">
+            Where $w(x) = \frac{\pi_\theta(x)}{\pi_{\mathrm{old}}(x)}$ is the importance weight.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section id="svrpg" class="section content-section">
+      <div class="container">
+        <h2 class="title is-3 has-text-centered section-title">Stochastic Variance Reduction</h2>
+        <div class="content">
+            <p class="has-text-centered mb-6">Standard estimators (like REINFORCE) suffer from high variance in reasoning tasks where rewards are sparse. We mitigate this using a control variate technique.</p>
+            
+            <div class="box" style="background: #f8fafc; border: 1px solid #e2e8f0;">
+              <p class="has-text-centered is-size-5">
+                $$ \mathbf{v}_k = \mathbf{g}(\tau; \theta_k) - \rho_k(\tau) \mathbf{g}(\tau; \tilde{\theta}) + \mu $$
+              </p>
+            </div>
+
+            <div class="columns is-multiline mt-5">
+                <div class="column is-4">
+                    <div class="pillar-box">
+                        <h4 class="title is-5 has-text-weight-bold" style="color:var(--primary-color);">Snapshot Policy ($\tilde{\theta}$)</h4>
+                        <p>A "lagging anchor" policy. As $\theta_k$ converges toward $\tilde{\theta}$, the stochastic terms cancel out.</p>
+                    </div>
+                </div>
+                <div class="column is-4">
+                    <div class="pillar-box">
+                        <h4 class="title is-5 has-text-weight-bold" style="color:var(--primary-color);">Exact Gradient ($\mu$)</h4>
+                        <p>The gradient of the snapshot policy, approximated via a large anchor batch ($B_L$) to serve as the stable baseline.</p>
+                    </div>
+                </div>
+                <div class="column is-4">
+                    <div class="pillar-box">
+                        <h4 class="title is-5 has-text-weight-bold" style="color:var(--primary-color);">Importance Sampling ($\rho$)</h4>
+                        <p>Weights $\rho_k(\tau)$ correct the distribution mismatch between the current policy and the snapshot.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="algorithm" class="section content-section">
+      <div class="container">
+        <h2 class="title is-3 has-text-centered section-title">Algorithm</h2>
+        <div class="content">
+          <p>
+            We propose an interleaved update schedule. To handle the instability of importance weights in high-dimensional token spaces, we apply a <strong>Dual-Clip</strong> strategy.
+          </p>
+
+          <div class="diagram-container">
+            <svg viewBox="0 0 800 350" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L0,6 L9,3 z" fill="#666" />
+                </marker>
+              </defs>
+              
+              <g transform="translate(50, 50)">
+                 <rect x="0" y="0" width="220" height="250" rx="10" fill="#E6F7FF" stroke="#00C2FF" stroke-width="2"/>
+                 <text x="110" y="30" text-anchor="middle" font-weight="bold" fill="#0A2540">1. Snapshot Phase</text>
+                 
+                 <rect x="30" y="60" width="160" height="40" rx="5" fill="#fff" stroke="#ccc"/>
+                 <text x="110" y="85" text-anchor="middle" font-size="12">Sample Large Batch $\mathcal{D}_L$</text>
+                 
+                 <path d="M 110 100 L 110 130" stroke="#666" stroke-width="2" marker-end="url(#arrow)"/>
+                 
+                 <rect x="30" y="140" width="160" height="60" rx="5" fill="#fff" stroke="#ccc"/>
+                 <text x="110" y="165" text-anchor="middle" font-size="12">Compute Anchor $\hat{\mu}$</text>
+                 <text x="110" y="185" text-anchor="middle" font-size="10" fill="#666">Using $\pi_{\tilde{\theta}}$</text>
+              </g>
+
+              <path d="M 280 175 L 340 175" stroke="#0A2540" stroke-width="3" marker-end="url(#arrow)"/>
+
+              <g transform="translate(350, 50)">
+                 <rect x="0" y="0" width="400" height="250" rx="10" fill="#F6F8FA" stroke="#0A2540" stroke-width="2"/>
+                 <text x="200" y="30" text-anchor="middle" font-weight="bold" fill="#0A2540">2. Inner Loop (Variance Reduced)</text>
+                 
+                 <rect x="30" y="60" width="340" height="40" rx="5" fill="#fff" stroke="#ccc"/>
+                 <text x="200" y="85" text-anchor="middle" font-size="12">Sample Small Batch $\mathcal{D}_S$ from $\pi_{\theta_t}$</text>
+                 
+                 <path d="M 200 100 L 200 130" stroke="#666" stroke-width="2" marker-end="url(#arrow)"/>
+
+                 <rect x="30" y="140" width="340" height="80" rx="5" fill="#fff" stroke="#0A2540"/>
+                 <text x="200" y="165" text-anchor="middle" font-size="14" font-weight="bold">Compute Direction $\mathbf{v}_t$</text>
+                 <text x="200" y="190" text-anchor="middle" font-size="12">Correction term using $\rho(\tau)$ and $\hat{\mu}$</text>
+                 <text x="200" y="210" text-anchor="middle" font-size="11" fill="#e53e3e">(Dual-Clip applied to $\rho$)</text>
+              </g>
+            </svg>
+            <span class="mini-caption">Figure 1: The SVRPG Algorithm Logic. The snapshot phase computes a stable baseline ($\hat{\mu}$) on a large batch, which is used to correct the variance of the updates in the inner loop.</span>
+          </div>
+
+          <h4 class="title is-5">Update Logic</h4>
+          <ol>
+              <li><strong>Snapshot Phase (Anchor):</strong> Sample a "Large Batch" $\mathcal{D}_L$ from snapshot $\pi_{\tilde{\theta}}$ and compute $\hat{\mu}$.</li>
+              <li><strong>Inner Loop:</strong> Sample a "Small Batch" $\mathcal{D}_S$ from $\pi_{\theta_t}$, compute Importance Sampling weights $\rho(\tau)$ with Dual-Clip truncation, and construct the variance-reduced gradient direction:</li>
+          </ol>
+          $$
+          \mathbf{v}_t = \frac{1}{B_S} \sum_{\tau \in \mathcal{D}_S} \left[\nabla \mathcal{L}_{\text{Reg}}(\tau; \theta_t) - \rho(\tau) \nabla \mathcal{L}_{\text{Reg}}(\tau; \tilde{\theta}) \right] + \hat{\mu}
+          $$
+          <p>
+            This approach decouples the variance of the reasoning reward from the model's structural updates, isolating the contribution of the recent parameter shift.
+          </p>
+
+          <h3 class="title is-4 mt-6">Normalized KL Formulations</h3>
+          <p>For completeness, the repository also supports normalized KL objectives, suitable for standard RLHF workflows.</p>
+          
+          <div class="table-container">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Regularization</th>
+                  <th>Surrogate Loss (sampling $x\sim \pi_{\mathrm{old}}$)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Forward KL</strong></td>
+                  <td>$\mathbb{E}\left[ -w(x) R(x) - \beta \log \pi_\theta(x) \right]$</td>
+                </tr>
+                <tr>
+                  <td><strong>Reverse KL</strong></td>
+                  <td>$\mathbb{E}\left[ w(x)\,(-R(x) + \beta \log w(x)) \right]$</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="citation" class="section content-section">
+      <div class="container">
+        <h2 class="title is-3 has-text-centered section-title">Citation</h2>
+        <div class="content">
+<pre id="cite-bibtex"><code>@article{zhang2025revisiting,
+  title={Revisiting Variance Reduction in Policy Gradients for LLM Reinforcement Learning},
+  author={Zhang, Yifan and Gu, Quanquan},
+  year = {2025},
+  month = {Dec},
+  journal = {Github},
+  url = {https://yifanzhang-pro.github.io/Revisiting-SVRPG-LLM-RL}
+}</code></pre>
+          <p>
+            <button id="copy-cite" class="button is-small is-link is-light">
+              <span class="icon"><i class="fas fa-clipboard"></i></span>
+              <span>Copy BibTeX</span>
+            </button>
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="content has-text-centered">
+        <p>
+          <a href="#intro">Introduction</a> &nbsp;&bull;&nbsp;
+          <a href="#theory">Theory</a> &nbsp;&bull;&nbsp;
+          <a href="#svrpg">SVRPG</a> &nbsp;&bull;&nbsp;
+          <a href="#citation">Citation</a> &nbsp;&bull;&nbsp;
+          <a href="https://github.com/yifanzhang-pro/Revisiting-SVRPG-LLM-RL">GitHub</a>
+        </p>
+        <p>&copy; 2025 Yifan Zhang. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Mobile navbar toggle
+    document.addEventListener('DOMContentLoaded', () => {
+      const $burgers = Array.from(document.querySelectorAll('.navbar-burger'));
+      $burgers.forEach(el => {
+        el.addEventListener('click', () => {
+          const target = el.dataset.target;
+          const $target = document.getElementById(target);
+          el.classList.toggle('is-active');
+          $target.classList.toggle('is-active');
+        });
+      });
+
+      // Hex -> rgb helper
+      function hexToRgb(hex){
+        const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return m ? { r:parseInt(m[1],16), g:parseInt(m[2],16), b:parseInt(m[3],16) } : null;
+      }
+      const root = document.documentElement;
+      const styles = getComputedStyle(root);
+      const p = styles.getPropertyValue('--primary-color').trim();
+      const l = styles.getPropertyValue('--link-color').trim();
+      const prgb = hexToRgb(p), lrgb = hexToRgb(l);
+      if(prgb){ root.style.setProperty('--primary-color-rgb', `${prgb.r}, ${prgb.g}, ${prgb.b}`); }
+      if(lrgb){ root.style.setProperty('--link-color-rgb', `${lrgb.r}, ${lrgb.g}, ${lrgb.b}`); }
+
+      // Copy BibTeX
+      const btn = document.getElementById('copy-cite');
+      const pre = document.getElementById('cite-bibtex');
+      if(btn && pre){
+        btn.addEventListener('click', async () => {
+          const text = pre.innerText;
+          try{
+            await navigator.clipboard.writeText(text);
+            btn.classList.add('is-success');
+            btn.classList.remove('is-link','is-light');
+            btn.innerHTML = '<span class="icon"><i class="fas fa-check"></i></span><span>Copied</span>';
+            setTimeout(() => {
+              btn.classList.remove('is-success');
+              btn.classList.add('is-link','is-light');
+              btn.innerHTML = '<span class="icon"><i class="fas fa-clipboard"></i></span><span>Copy BibTeX</span>';
+            }, 1600);
+          }catch(e){
+            const range = document.createRange();
+            range.selectNode(pre);
+            const sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+            try{ document.execCommand('copy'); }catch(_){}
+            sel.removeAllRanges();
+          }
+        });
+      }
+    });
+  </script>
+
+</body>
+</html>
