@@ -96,7 +96,10 @@ For completeness, the repository also supports normalized KL objectives suitable
 ```bibtex
 @article{zhang2025revisiting,
   title={Revisiting Variance Reduction in Policy Gradients for LLM Reinforcement Learning},
-  author={Zhang, Yifan},
-  year={2025}
+  author={Zhang, Yifan and Gu, Quanquan},
+  year    = {2025},
+  month   = {Dec},
+  journal = {Github},
+  url     = {https://yifanzhang-pro.github.io/Revisiting-SVRPG-LLM-RL}
 }
 ```
