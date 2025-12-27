@@ -215,7 +215,7 @@
             Reinforcement Learning (RL) has become central to aligning Large Language Models (LLMs) with complex reasoning tasks. While recent advancements have refined KL-regularized policy gradient objectives, the high variance inherent in gradient estimators remains a persistent bottleneck. This often necessitates prohibitively large batch sizes or conservative update steps, impeding sample efficiency.
           </p>
           <div class="notification is-light is-info" style="border-left: 4px solid var(--primary-color);">
-            <strong>The Contribution:</strong> This work revisits the principles of <strong>Stochastic Variance-Reduced Policy Gradient (SVRPG)</strong> and adapts them to the high-dimensional domain of LLM alignment. We propose a variance-reduced estimator utilizing periodic policy snapshots to construct a control variate specifically for the KL-regularized objective.
+            <strong>The Contribution:</strong> This work revisits the principles of <strong>Stochastic Variance-Reduced Policy Gradient (SVRPG)</strong> and adapts them to the large-scale LLM Reinforcement Learning. We propose a variance-reduced estimator utilizing periodic policy snapshots to construct a control variate specifically for the KL-regularized objective.
           </div>
           <p>
              We reconcile standard LLM alignment with SVRPG (Papini et al., 2018), demonstrating that a periodic snapshot mechanism can be efficiently integrated to stabilize learning without incurring prohibitive memory overheads.
