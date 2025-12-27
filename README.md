@@ -36,7 +36,7 @@ $$
 
 Crucially for implementation in frameworks like PyTorch, we derive differentiable surrogate losses $\mathcal{L}(\theta)$ such that $\nabla_\theta \mathcal{L}(\theta)$ is an unbiased estimator of $-\nabla_\theta J(\theta)$.
 
-For the **Unnormalized Reverse KL (URKL)**—which is theoretically equivalent to the $k_3$ estimator used in methods like **GRPO** (Group Relative Policy Optimization)—the surrogate loss is:
+For the **Unnormalized Reverse KL (URKL)**, which is theoretically equivalent to the $k_3$ estimator used in methods like **GRPO** (Group Relative Policy Optimization), the surrogate loss is:
 
 $$
 \mathcal{L}_{\mathrm{URKL}}(\theta) = Z_{\mathrm{old}} \mathbb{E}_{x\sim\tilde{\pi}_{\mathrm{old}}}\left[ -w(x)R(x) + \beta\bigl(w(x)\log w(x) - w(x)\bigr) \right]
