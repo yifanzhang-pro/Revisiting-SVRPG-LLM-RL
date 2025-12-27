@@ -84,7 +84,7 @@ This approach decouples the variance of the reasoning reward from the model's st
 
 ## 5. Normalized KL Formulations 
 
-For completeness, the repository also supports normalized KL objectives suitable for standard RLHF workflows.
+For completeness, the repository also supports normalized KL objectives, which are suitable for standard RLHF workflows.
 
 | Regularization | Surrogate Loss (sampling $x\sim \pi_{\mathrm{old}}$) |
 | :--- | :--- |
