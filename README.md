@@ -64,7 +64,7 @@ As $\theta_k$ converges toward $\tilde{\theta}$, the term $\mathbf{g}(\tau; \the
 
 We propose an interleaved update schedule where the snapshot $\tilde{\theta}$ is updated periodically. To handle the instability of importance weights in high-dimensional token spaces, we apply a **Dual-Clip** strategy to the importance weights $\rho(\tau)$.
 
-![](./Algorithm1.png) 
+![](./docs/Algorithm1.png) 
 
 ### Implementation Logic
 
