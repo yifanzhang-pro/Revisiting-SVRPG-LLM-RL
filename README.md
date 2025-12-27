@@ -1,5 +1,7 @@
 # Revisiting Variance Reduction in Policy Gradients for LLM Reinforcement Learning
 
+Blog Post: [https://yifanzhang-pro.github.io/Revisiting-SVRPG-LLM-RL](https://yifanzhang-pro.github.io/Revisiting-SVRPG-LLM-RL) 
+
 **Author:** **Yifan Zhang**, Quanquan Gu 
 
 **Date:** December 27, 2025
