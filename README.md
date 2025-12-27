@@ -62,9 +62,9 @@ $$
 
 As $\theta_k$ converges toward $\tilde{\theta}$, the term $\mathbf{g}(\tau; \theta_k) - \rho_k(\tau) \mathbf{g}(\tau; \tilde{\theta})$ tends toward zero, leaving only the stable term $\mu$.
 
-## 4. Algorithm: SVRPG for LLM Alignment
+## 4. Algorithm: SVRPG for LLM Reinforcement Learning
 
-We propose an interleaved update schedule where the snapshot $\tilde{\theta}$ is updated periodically. To handle the instability of importance weights in high-dimensional token spaces, we apply a **Dual-Clip** strategy to the importance weights $\rho(\tau)$.
+We propose an interleaved update schedule where the snapshot $\tilde{\theta}$ is updated periodically. To handle the instability of importance weights in off-policy settings, we apply a **Dual-Clip** strategy to the importance weights $\rho(\tau)$.
 
 ![](./docs/Algorithm1.png) 
 
