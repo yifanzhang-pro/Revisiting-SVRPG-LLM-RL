@@ -10,7 +10,7 @@ Blog Post: [https://yifanzhang-pro.github.io/Revisiting-SVRPG-LLM-RL](https://yi
 
 Reinforcement Learning (RL) has become central to aligning Large Language Models (LLMs) with complex reasoning tasks. While recent advancements have refined KL-regularized policy gradient objectives, the high variance inherent in gradient estimators remains a persistent bottleneck, often necessitating prohibitively large batch sizes or conservative update steps.
 
-This work revisits the principles of **Stochastic Variance-Reduced Policy Gradient (SVRPG)** and adapts them to the high-dimensional domain of LLM alignment. We propose a variance-reduced estimator that leverages periodic policy snapshots to construct a control variate specifically for the KL-regularized objective. We establish a theoretical framework demonstrating that this approach mitigates the instability characteristic of REINFORCE-style estimators in vast token spaces.
+This work revisits the principles of **Stochastic Variance-Reduced Policy Gradient (SVRPG)** and adapts them to the large-scale LLM Reinforcement Learning problem. We propose a variance-reduced estimator that leverages periodic policy snapshots to construct a control variate specifically for the KL-regularized objective. We establish a theoretical framework demonstrating that this approach mitigates the instability characteristic of REINFORCE-style estimators in vast token spaces.
 
 ## 1. Introduction: The Variance Bottleneck in Reasoning
 
